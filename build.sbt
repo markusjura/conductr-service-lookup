@@ -4,8 +4,8 @@ name := "conductR-service-lookup"
 
 SandboxKeys.image in Global := "conductr/conductr"
 SandboxKeys.imageVersion in Global := "latest"
-SandboxKeys.nrOfContainers in Global := 1
-SandboxKeys.ports in Global := Set(5601)
+SandboxKeys.nrOfContainers in Global := 3
+SandboxKeys.ports := Set(9000)
 
 lazy val commonSettings = Seq(
   version := "0.1.0-SNAPSHOT",
@@ -13,7 +13,7 @@ lazy val commonSettings = Seq(
 )
 
 lazy val charonShopApp = (project in file("play-front"))
-  .enablePlugins(PlayScala)
+  .enablePlugins(PlayScala, ConductRPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "charon-shop",
@@ -24,12 +24,14 @@ lazy val charonShopApp = (project in file("play-front"))
     BundleKeys.roles  := Set("frontend"),
     BundleKeys.endpoints := Map("charon" -> Endpoint("http", services = Set(URI("http://:9000")))),
     BundleKeys.startCommand += "-Dhttp.port=$CHARON_BIND_PORT -Dhttp.address=$CHARON_BIND_IP",
+    BundleKeys.configurationName := "prod",
     libraryDependencies ++= Dependencies.conductrPlayScala,
     fork in run := true,
     routesGenerator := InjectedRoutesGenerator
   )
 
 lazy val ferryService = (project in file("akka-back"))
+  .enablePlugins(JavaAppPackaging, ConductRPlugin)
   .settings(commonSettings: _*)
   .settings(
     name := "ferry-boat",
